@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# Check if the script is executed with root privileges
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run this script as root (sudo)."
+    exit 1
+fi
+
+# Set the username and command
+USERNAME="seerish"
+COMMAND="ALL"
+
+# Add the sudoers configuration line
+echo "$USERNAME ALL=(ALL:ALL) NOPASSWD: $COMMAND" | sudo EDITOR='tee -a' visudo
+
+echo "Passwordless sudo configuration added for $USERNAME to run $COMMAND"
+
 # Edit the Locale Configuration
 # Uncomment the Desired Locale
 sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
@@ -11,9 +26,6 @@ sudo sed -i 's/^#\(en_US.UTF-8 UTF-8\)/\1/' /etc/locale.gen
 sudo locale-gen
 
 # Set Default Locale
-echo "LANG=en_US.UTF-8" | sudo tee /etc/locale.conf
-
-# Update package database
 sudo pacman -Sy --noconfirm
 
 # Install yaourt (an AUR helper)
@@ -37,5 +49,17 @@ makepkg -si --noconfirm
 cd ../yaourt
 makepkg -si --noconfirm
 
+sudo pacman -S --noconfirm xfce4
+sudo pacman -S --noconfirm xfce4-goodies
+sudo pacman -S --noconfirm lightdm lightdm-gtk-greeter
+
+
+
 CXXFLAGS+=" -Wno-deprecated-copy"
+
 yaourt -S --noconfirm yasem-git
+
+sudo systemctl enable lightdm.service
+sudo systemctl start lightdm.service
+
+sudo reboot
